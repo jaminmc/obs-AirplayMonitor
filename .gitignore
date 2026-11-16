@@ -1,0 +1,18 @@
+# Downloaded OBS dependencies and local build trees.
+# A root "ignore everything, then un-ignore" list leaves third_party grey in
+# Cursor. Cursor does not apply the ! exception once /* has excluded the directory.
+.deps/
+build/
+build_*/
+
+# Local CMake preset overrides
+CMakeUserPresets.json
+
+# Lock files
+*.lock.json
+
+# macOS legacy resource forks
+.DS_Store
+
+# CMake build number cache
+/cmake/.CMakeBuildNumber

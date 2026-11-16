@@ -1,0 +1,25 @@
+AirPlay Monitor for OBS Studio
+Copyright (C) 2026 Zakar Media
+
+The plugin source, other than the directory named below, is licensed under
+GPL-2.0-or-later. See the LICENSE file.
+
+third_party/fairplay-sap is the FairPlay SAP sender from
+https://github.com/objevovat/fairplay-sap-core-airplay2-sender-authentication-handshake,
+reduced to its C port and a C++ port of its Go packages, and is licensed under
+LGPL-3.0-or-later. Its LGPL parts derive from Omar Roth's doubletake,
+https://github.com/omarroth/doubletake (commit 8ccea5f), which is also
+LGPL-3.0. The C++ port was made for this project on 2026-11-15. See LICENSE,
+COPYING.GPL-3.0, and NOTICE.md in that directory. tests/fairplay_vectors.inc
+holds output of that module and carries
+the same license. The OBS plugin compiles that code in. The combined work is
+distributed under GPL-3.0-or-later.
+
+Pairing uses the public SRP-6a and HomeKit TLV descriptions. That code is part
+of this project and is not taken from the LGPL module.
+
+third_party/tweetnacl is TweetNaCl 20140427, which is in the public domain, by
+Daniel J. Bernstein, Bernard van Gastel, Wesley Janssen, Tanja Lange, Peter
+Schwabe, and Sjaak Smetsers. It supplies Ed25519 and X25519 for one-time
+pairing. This project provides randombytes and builds that file with a 32-bit
+u32 so the hash stays correct on 64-bit macOS.
