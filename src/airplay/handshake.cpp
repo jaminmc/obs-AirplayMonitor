@@ -42,9 +42,9 @@ std::string uuid_string()
 	bytes[6] = (uint8_t)((bytes[6] & 0x0f) | 0x40);
 	bytes[8] = (uint8_t)((bytes[8] & 0x3f) | 0x80);
 	char text[40];
-	std::snprintf(text, sizeof text, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
-		      bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
-		      bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+	std::snprintf(text, sizeof text, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		      bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8],
+		      bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
 	return text;
 }
 
@@ -103,8 +103,8 @@ bool send_request(ByteTransport &transport, const std::string &method, const std
 		headers["Content-Type"] = content_type;
 		headers["Content-Length"] = std::to_string(body ? body->size() : 0);
 	}
-	std::string request = make_rtsp_request(method, uri, cseq, headers, body ? body->data() : nullptr,
-						body ? body->size() : 0);
+	std::string request =
+		make_rtsp_request(method, uri, cseq, headers, body ? body->data() : nullptr, body ? body->size() : 0);
 	if (!transport.write_all(reinterpret_cast<const uint8_t *>(request.data()), request.size())) {
 		error = "Could not write to the receiver";
 		return false;
@@ -328,7 +328,8 @@ bool post_octet(HandshakeResult &result, ByteTransport &io, Reader &reader, cons
 		const std::map<std::string, std::string> &extra, RtspMessage &response, std::string &error)
 {
 	note(result, "POST", path);
-	if (!send_request(io, "POST", uri_for(receiver, path), cseq++, &body, "application/octet-stream", &extra, error))
+	if (!send_request(io, "POST", uri_for(receiver, path), cseq++, &body, "application/octet-stream", &extra,
+			  error))
 		return false;
 	return reader.next(response, error);
 }
@@ -399,9 +400,9 @@ std::map<std::string, std::string> pin_headers(int hkp, const std::string &clien
 
 enum class VerifyOutcome { Ok, Rejected, Closed };
 
-VerifyOutcome pair_verify_exchange(HandshakeResult &result, ByteTransport &io, Reader &reader, const ReceiverInfo &receiver,
-				   int &cseq, int hkp, const PairingIdentity &identity, std::vector<uint8_t> &channel,
-				   RtspMessage &response, std::string &error)
+VerifyOutcome pair_verify_exchange(HandshakeResult &result, ByteTransport &io, Reader &reader,
+				   const ReceiverInfo &receiver, int &cseq, int hkp, const PairingIdentity &identity,
+				   std::vector<uint8_t> &channel, RtspMessage &response, std::string &error)
 {
 	VerifyEphemeral ephemeral;
 	std::vector<uint8_t> v1;
@@ -445,9 +446,10 @@ VerifyOutcome pair_verify_exchange(HandshakeResult &result, ByteTransport &io, R
 	return VerifyOutcome::Ok;
 }
 
-bool finish_pin_setup(HandshakeResult &result, ByteTransport &io, Reader &reader, const ReceiverInfo &receiver, int &cseq,
-		      int hkp, const PairingIdentity &identity, const std::string &password, std::vector<uint8_t> &channel,
-		      RtspMessage &response, std::string &error, const std::function<bool()> &before_verify)
+bool finish_pin_setup(HandshakeResult &result, ByteTransport &io, Reader &reader, const ReceiverInfo &receiver,
+		      int &cseq, int hkp, const PairingIdentity &identity, const std::string &password,
+		      std::vector<uint8_t> &channel, RtspMessage &response, std::string &error,
+		      const std::function<bool()> &before_verify)
 {
 	std::map<std::string, std::string> headers = pin_headers(hkp, identity.id, false, false);
 	std::vector<uint8_t> m1 = pair_setup_m1_pin();
@@ -534,8 +536,8 @@ bool finish_pin_setup(HandshakeResult &result, ByteTransport &io, Reader &reader
 	}
 	if (before_verify && !before_verify())
 		return false;
-	VerifyOutcome verified = pair_verify_exchange(result, io, reader, receiver, cseq, hkp, identity, channel, response,
-						      error);
+	VerifyOutcome verified =
+		pair_verify_exchange(result, io, reader, receiver, cseq, hkp, identity, channel, response, error);
 	if (verified == VerifyOutcome::Ok)
 		return true;
 	if (result.error.empty())
@@ -569,7 +571,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		return result;
 	}
 	note(result, "GET", "/info");
-	if (!send_request(*io, "GET", info_uri, cseq++, &info_body, "application/x-apple-binary-plist", nullptr, error)) {
+	if (!send_request(*io, "GET", info_uri, cseq++, &info_body, "application/x-apple-binary-plist", nullptr,
+			  error)) {
 		result.error = error;
 		return result;
 	}
@@ -605,8 +608,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 	}
 
 	result.fairplay_advertised = feature_bit(receiver.features, (int)FeatureBit::FairPlayAuth) ||
-				      feature_bit(receiver.features, (int)FeatureBit::FairPlayAesGcm) ||
-				      feature_bit(receiver.features, (int)FeatureBit::UnifiedPairing);
+				     feature_bit(receiver.features, (int)FeatureBit::FairPlayAesGcm) ||
+				     feature_bit(receiver.features, (int)FeatureBit::UnifiedPairing);
 	DisplayMode display = best_display(receiver.displays);
 	bool hevc = allow_hevc && advertise_hevc(receiver.features, receiver.displays);
 	result.max_width = display.width;
@@ -693,15 +696,16 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 			int hkp = pin_hkp(receiver.features);
 			bool verified = false;
 			if (pairing_device_remembered(device_id)) {
-				VerifyOutcome outcome = pair_verify_exchange(result, *io, reader, receiver, cseq, hkp, identity,
-									    srp_key, response, error);
+				VerifyOutcome outcome = pair_verify_exchange(result, *io, reader, receiver, cseq, hkp,
+									     identity, srp_key, response, error);
 				if (outcome == VerifyOutcome::Ok) {
 					verified = true;
 					saved_pairing = true;
 				} else if (outcome == VerifyOutcome::Closed) {
 					pairing_device_forget(device_id);
 					if (result.error.empty())
-						result.error = "The saved pairing was not accepted. Press Connect again and enter the code shown on the TV.";
+						result.error =
+							"The saved pairing was not accepted. Press Connect again and enter the code shown on the TV.";
 					return result;
 				} else {
 					pairing_device_forget(device_id);
@@ -720,11 +724,12 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 				}
 				for (int type : attempts) {
 					hkp = type;
-					std::map<std::string, std::string> headers = pin_headers(type, identity.id, true, false);
+					std::map<std::string, std::string> headers =
+						pin_headers(type, identity.id, true, false);
 					std::vector<uint8_t> empty;
 					note(result, "POST", "/pair-pin-start");
-					if (!send_request(*io, "POST", uri_for(receiver, "/pair-pin-start"), cseq++, &empty,
-							  "application/octet-stream", &headers, error)) {
+					if (!send_request(*io, "POST", uri_for(receiver, "/pair-pin-start"), cseq++,
+							  &empty, "application/octet-stream", &headers, error)) {
 						result.error = error;
 						return result;
 					}
@@ -745,16 +750,16 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 				else if (!input.pin.empty())
 					password = input.pin;
 				else if (!shown) {
-					result.error =
-						"The TV did not show a pairing code (RTSP " + std::to_string(last_status) + ").";
+					result.error = "The TV did not show a pairing code (RTSP " +
+						       std::to_string(last_status) + ").";
 					return result;
 				}
 				if (password.empty()) {
 					result.error = kCodeRequired;
 					return result;
 				}
-				if (!finish_pin_setup(result, *io, reader, receiver, cseq, hkp, identity, password, srp_key,
-						      response, error, nullptr))
+				if (!finish_pin_setup(result, *io, reader, receiver, cseq, hkp, identity, password,
+						      srp_key, response, error, nullptr))
 					return result;
 				pairing_device_remember(device_id);
 			}
@@ -941,8 +946,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 			const char *info = "DataStream-Output-Encryption-Key";
 			uint8_t derived[32];
 			if (hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(salt.data()),
-					salt.size(), reinterpret_cast<const uint8_t *>(info), std::strlen(info), derived,
-					sizeof derived))
+					salt.size(), reinterpret_cast<const uint8_t *>(info), std::strlen(info),
+					derived, sizeof derived))
 				audio_key.assign(derived, derived + sizeof derived);
 			secure_clear(derived, sizeof derived);
 		}
@@ -951,8 +956,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		if (!audio_setup_body(audio_id, audio_key, sync_port, audio_body, error))
 			return true;
 		note(result, "SETUP", "audio");
-		if (!send_request(*io, "SETUP", stream_uri, cseq++, &audio_body, "application/x-apple-binary-plist", nullptr,
-				  error) ||
+		if (!send_request(*io, "SETUP", stream_uri, cseq++, &audio_body, "application/x-apple-binary-plist",
+				  nullptr, error) ||
 		    !reader.next(response, error)) {
 			result.error = error;
 			return false;
@@ -967,7 +972,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		int port = 0;
 		int control = 0;
 		audio_ports_from(body, port, control);
-		if (control == input.audio_data_port || control == input.audio_sync_port || control == input.timing_port)
+		if (control == input.audio_data_port || control == input.audio_sync_port ||
+		    control == input.timing_port)
 			control = 0;
 		if (port > 0 && port != input.audio_data_port && port != input.audio_sync_port &&
 		    port != input.timing_port) {
@@ -1000,8 +1006,9 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		std::string salt = "DataStream-Salt" + std::to_string(connection_id);
 		const char *info = "DataStream-Output-Encryption-Key";
 		uint8_t chacha[32];
-		if (!hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(salt.data()), salt.size(),
-				 reinterpret_cast<const uint8_t *>(info), std::strlen(info), chacha, sizeof chacha)) {
+		if (!hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(salt.data()),
+				 salt.size(), reinterpret_cast<const uint8_t *>(info), std::strlen(info), chacha,
+				 sizeof chacha)) {
 			result.error = kFairPlayFailed;
 			return result;
 		}
@@ -1016,10 +1023,12 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		uint8_t write_key[32];
 		uint8_t read_key[32];
 		if (!hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(control_salt),
-				 std::strlen(control_salt), reinterpret_cast<const uint8_t *>("Control-Write-Encryption-Key"),
+				 std::strlen(control_salt),
+				 reinterpret_cast<const uint8_t *>("Control-Write-Encryption-Key"),
 				 std::strlen("Control-Write-Encryption-Key"), write_key, sizeof write_key) ||
 		    !hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(control_salt),
-				 std::strlen(control_salt), reinterpret_cast<const uint8_t *>("Control-Read-Encryption-Key"),
+				 std::strlen(control_salt),
+				 reinterpret_cast<const uint8_t *>("Control-Read-Encryption-Key"),
 				 std::strlen("Control-Read-Encryption-Key"), read_key, sizeof read_key)) {
 			result.error = "Pairing failed.";
 			return result;
@@ -1031,8 +1040,9 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		std::string salt = "DataStream-Salt" + std::to_string(connection_id);
 		const char *info = "DataStream-Output-Encryption-Key";
 		uint8_t chacha[32];
-		if (!hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(salt.data()), salt.size(),
-				 reinterpret_cast<const uint8_t *>(info), std::strlen(info), chacha, sizeof chacha)) {
+		if (!hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(salt.data()),
+				 salt.size(), reinterpret_cast<const uint8_t *>(info), std::strlen(info), chacha,
+				 sizeof chacha)) {
 			result.error = "Pairing failed.";
 			return result;
 		}
@@ -1114,7 +1124,8 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 			return result;
 		}
 		if (response.status != 200) {
-			result.error = "RECORD failed (RTSP " + std::to_string(response.status) + ")" + response_hint(response);
+			result.error = "RECORD failed (RTSP " + std::to_string(response.status) + ")" +
+				       response_hint(response);
 			return result;
 		}
 	}
@@ -1128,10 +1139,12 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 		uint8_t event_read[32];
 		uint8_t event_write[32];
 		if (hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(event_salt),
-				std::strlen(event_salt), reinterpret_cast<const uint8_t *>("Events-Write-Encryption-Key"),
+				std::strlen(event_salt),
+				reinterpret_cast<const uint8_t *>("Events-Write-Encryption-Key"),
 				std::strlen("Events-Write-Encryption-Key"), event_read, sizeof event_read) &&
 		    hkdf_sha512(srp_key.data(), srp_key.size(), reinterpret_cast<const uint8_t *>(event_salt),
-				std::strlen(event_salt), reinterpret_cast<const uint8_t *>("Events-Read-Encryption-Key"),
+				std::strlen(event_salt),
+				reinterpret_cast<const uint8_t *>("Events-Read-Encryption-Key"),
 				std::strlen("Events-Read-Encryption-Key"), event_write, sizeof event_write)) {
 			result.event_read_key.assign(event_read, event_read + sizeof event_read);
 			result.event_write_key.assign(event_write, event_write + sizeof event_write);
@@ -1149,8 +1162,7 @@ HandshakeResult run_once(ByteTransport &transport, const HandshakeInput &input, 
 	}
 	std::ostringstream status;
 	status << "Streaming " << codec_name(result.config.codec) << ' ' << result.config.width << 'x'
-	       << result.config.height << '@' << result.config.fps << ", " << (result.config.bitrate / 1000)
-	       << " kbps";
+	       << result.config.height << '@' << result.config.fps << ", " << (result.config.bitrate / 1000) << " kbps";
 	if (result.config.fell_back_from_hevc)
 		status << ", HEVC was rejected";
 	if (saved_pairing)

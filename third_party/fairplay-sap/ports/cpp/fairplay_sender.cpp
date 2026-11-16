@@ -226,8 +226,8 @@ void hidden_words(const uint8_t src[64], uint32_t hidden[16])
 /* prologue.go shuffleHiddenG2Into */
 void shuffle_hidden_g2(uint32_t h[16], uint32_t a, uint32_t b, uint32_t c, uint32_t d)
 {
-	const uint32_t picks[8] = {(a ^ 3) & 15,	(b ^ 0xd) & 15,	     (c ^ 0xb) & 15, (d ^ 6) & 15,
-				   ((a >> 4) ^ 1) & 15, (b >> 4) & 15, ((c >> 4) ^ 0xe) & 15, ((d >> 4) ^ 4) & 15};
+	const uint32_t picks[8] = {(a ^ 3) & 15,        (b ^ 0xd) & 15, (c ^ 0xb) & 15,        (d ^ 6) & 15,
+				   ((a >> 4) ^ 1) & 15, (b >> 4) & 15,  ((c >> 4) ^ 0xe) & 15, ((d >> 4) ^ 4) & 15};
 	for (int i = 0; i < 8; i++) {
 		uint32_t swap = h[i];
 		h[i] = h[picks[i]];
@@ -334,7 +334,8 @@ void tail_spn(const Tables &t, const uint8_t input[16], const uint8_t mix_table[
 		}
 		for (int col = 0; col < 4; col++) {
 			uint8_t *s = state + col * 4;
-			store_le32(s, t.type_ii[0][s[0]] ^ t.type_ii[1][s[1]] ^ t.type_ii[2][s[2]] ^ t.type_ii[3][s[3]]);
+			store_le32(s,
+				   t.type_ii[0][s[0]] ^ t.type_ii[1][s[1]] ^ t.type_ii[2][s[2]] ^ t.type_ii[3][s[3]]);
 		}
 	}
 	for (int p = 0; p < 16; p++)

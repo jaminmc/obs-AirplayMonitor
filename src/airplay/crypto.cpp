@@ -218,8 +218,7 @@ bool der_read(const std::vector<uint8_t> &der, size_t &pos, uint8_t tag, size_t 
 }
 
 /* Reads a PKCS#1 RSAPublicKey, or the same key inside a SubjectPublicKeyInfo. */
-bool rsa_public_from_der(const std::vector<uint8_t> &der, std::vector<uint8_t> &modulus,
-			 std::vector<uint8_t> &exponent)
+bool rsa_public_from_der(const std::vector<uint8_t> &der, std::vector<uint8_t> &modulus, std::vector<uint8_t> &exponent)
 {
 	size_t pos = 0, start = 0, length = 0;
 	if (!der_read(der, pos, 0x30, start, length))

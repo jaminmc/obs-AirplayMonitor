@@ -287,8 +287,8 @@ ObsVideoEncoder::~ObsVideoEncoder()
 	delete impl_;
 }
 
-bool ObsVideoEncoder::start(const std::string &encoder_id, const EncodeConfig &config, bool preview,
-			    Callback callback, std::string &error)
+bool ObsVideoEncoder::start(const std::string &encoder_id, const EncodeConfig &config, bool preview, Callback callback,
+			    std::string &error)
 {
 	stop();
 	obs_video_info info;
@@ -335,7 +335,8 @@ bool ObsVideoEncoder::start(const std::string &encoder_id, const EncodeConfig &c
 	if (encoder_id.find("nvenc") != std::string::npos)
 		settings.set_string("tune", "ll");
 
-	impl_->encoder = obs_video_encoder_create(encoder_id.c_str(), "AirPlay Monitor Video", settings.data(), nullptr);
+	impl_->encoder =
+		obs_video_encoder_create(encoder_id.c_str(), "AirPlay Monitor Video", settings.data(), nullptr);
 	if (!impl_->encoder) {
 		impl_->release();
 		error = "Could not create the " + encoder_name() + " encoder";
@@ -404,7 +405,8 @@ bool ObsVideoEncoder::running() const
 
 std::string ObsVideoEncoder::encoder_name() const
 {
-	const char *name = impl_->encoder_id.empty() ? nullptr : obs_encoder_get_display_name(impl_->encoder_id.c_str());
+	const char *name = impl_->encoder_id.empty() ? nullptr
+						     : obs_encoder_get_display_name(impl_->encoder_id.c_str());
 	return name ? name : impl_->encoder_id;
 }
 

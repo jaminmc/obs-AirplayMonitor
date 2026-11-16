@@ -42,19 +42,14 @@ extern "C" {
 void fp_sap_hash(const uint8_t block[64], uint8_t out[16]);
 
 /* The 20-byte descriptor over prefix || m3_sap || m2_sap || suffix. */
-void fp_sap_descriptor_for_sap(const uint8_t m3_sap[128],
-                               const uint8_t m2_sap[128],
-                               uint8_t out[20]);
+void fp_sap_descriptor_for_sap(const uint8_t m3_sap[128], const uint8_t m2_sap[128], uint8_t out[20]);
 
 /* The 20 payload-dependent bytes Phase 2 consumes, for a per-session SAP.
  * `gp` is Phase 1's 128-byte output buffer. */
-void fp_bridge_x9_head_for_sap(const uint8_t local_sap[128],
-                               const uint8_t gp[128],
-                               uint8_t out[20]);
+void fp_bridge_x9_head_for_sap(const uint8_t local_sap[128], const uint8_t gp[128], uint8_t out[20]);
 
 /* Exposed for conformance testing against ../../conformance/ring_indices.csv. */
-void fp_build_ring_indices(uint8_t x[840], uint8_t y[840],
-                           uint8_t z[840], uint8_t w[840]);
+void fp_build_ring_indices(uint8_t x[840], uint8_t y[840], uint8_t z[840], uint8_t w[840]);
 
 /* Exposed because they are the two easiest things to port wrongly. */
 uint8_t fp_rotate_or_zero(uint8_t value, uint8_t count);

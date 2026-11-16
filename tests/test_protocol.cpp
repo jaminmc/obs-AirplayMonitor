@@ -66,8 +66,8 @@ std::vector<uint8_t> rtsp_response(int status, const std::vector<uint8_t> &body)
 {
 	std::string head = "RTSP/1.0 " + std::to_string(status) + " OK\r\nCSeq: 1\r\n";
 	if (!body.empty()) {
-		head += "Content-Type: application/x-apple-binary-plist\r\nContent-Length: " + std::to_string(body.size()) +
-			"\r\n";
+		head += "Content-Type: application/x-apple-binary-plist\r\nContent-Length: " +
+			std::to_string(body.size()) + "\r\n";
 	}
 	head += "\r\n";
 	std::vector<uint8_t> out(head.begin(), head.end());
@@ -186,7 +186,8 @@ void test_plist_against_cf()
 	root.emplace("big", airplay::Plist::integer(0x123456789abcdefll));
 	root.emplace("word", airplay::Plist::integer(70000));
 	root.emplace("rate", airplay::Plist::real(-0.125));
-	root.emplace("name", airplay::Plist::string("B\xc3\xbcro TV \xe2\x80\x93 \xe5\xae\xa2\xe5\x8e\x85 \xf0\x9f\x93\xba"));
+	root.emplace("name",
+		     airplay::Plist::string("B\xc3\xbcro TV \xe2\x80\x93 \xe5\xae\xa2\xe5\x8e\x85 \xf0\x9f\x93\xba"));
 	root.emplace("empty", airplay::Plist::string(""));
 	std::vector<uint8_t> blob(300);
 	for (size_t i = 0; i < blob.size(); i++)
@@ -218,7 +219,8 @@ void test_plist_against_cf()
 		if (!written)
 			continue;
 		airplay::Plist decoded;
-		CHECK(airplay::decode_plist(CFDataGetBytePtr(written), (size_t)CFDataGetLength(written), decoded, error));
+		CHECK(airplay::decode_plist(CFDataGetBytePtr(written), (size_t)CFDataGetLength(written), decoded,
+					    error));
 		CHECK(same_plist(original, decoded));
 		CFRelease(written);
 	}
@@ -309,11 +311,12 @@ void test_choose_encode()
 
 void test_mirror_and_ntp()
 {
-	const uint8_t payload[] = {0x01, 0x64, 0xc0, 0x28, 0xff, 0xe1, 0x00, 0x1f, 0x67, 0x64, 0xc0, 0x28, 0xac,
-				    0x2b, 0x40, 0x1e, 0x00, 0x8d, 0x68, 0x07, 0x88, 0x00, 0x00, 0x03, 0x00, 0x08,
-				    0x00, 0x00, 0x03, 0x00, 0xf0};
+	const uint8_t payload[] = {0x01, 0x64, 0xc0, 0x28, 0xff, 0xe1, 0x00, 0x1f, 0x67, 0x64, 0xc0,
+				   0x28, 0xac, 0x2b, 0x40, 0x1e, 0x00, 0x8d, 0x68, 0x07, 0x88, 0x00,
+				   0x00, 0x03, 0x00, 0x08, 0x00, 0x00, 0x03, 0x00, 0xf0};
 	CHECK(sizeof payload == 31);
-	auto packet = airplay::build_mirror_packet(airplay::MirrorPayloadType::Codec, 0, 864, 480, payload, sizeof payload);
+	auto packet =
+		airplay::build_mirror_packet(airplay::MirrorPayloadType::Codec, 0, 864, 480, payload, sizeof payload);
 	CHECK(packet.size() == 128 + 31);
 	CHECK(packet[0] == 31 && packet[1] == 0 && packet[2] == 0 && packet[3] == 0);
 	CHECK(packet[4] == 1 && packet[5] == 0);
@@ -335,11 +338,12 @@ void test_mirror_and_ntp()
 	CHECK(idr.size() == 128 + sizeof nal);
 	CHECK(idr[4] == 0 && idr[5] == 0x10 && idr[6] == 0 && idr[7] == 0);
 	CHECK(idr[16] == 0 && idr[40] == 0);
-	auto delta = airplay::build_mirror_packet(airplay::MirrorPayloadType::Video, 0, 864, 480, nal, sizeof nal, false);
+	auto delta =
+		airplay::build_mirror_packet(airplay::MirrorPayloadType::Video, 0, 864, 480, nal, sizeof nal, false);
 	CHECK(delta[4] == 0 && delta[5] == 0 && delta[6] == 0);
 
-	auto hevc = airplay::build_mirror_packet(airplay::MirrorPayloadType::Codec, 0, 864, 480, payload, sizeof payload,
-						 false, true);
+	auto hevc = airplay::build_mirror_packet(airplay::MirrorPayloadType::Codec, 0, 864, 480, payload,
+						 sizeof payload, false, true);
 	CHECK(hevc.size() == 128 + 31);
 	CHECK(hevc[6] == 0x1e && hevc[7] == 0x01);
 
@@ -538,8 +542,8 @@ void test_crypto()
 	std::vector<uint8_t> wrapped;
 	CHECK(!airplay::rsa_oaep_wrap_key(hex_of(short_key.data(), short_key.size()), key, wrapped, error));
 
-	CFMutableDictionaryRef attrs =
-		CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+	CFMutableDictionaryRef attrs = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+								 &kCFTypeDictionaryValueCallBacks);
 	int bits = 2048;
 	CFNumberRef bits_number = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &bits);
 	CFDictionarySetValue(attrs, kSecAttrKeyType, kSecAttrKeyTypeRSA);
@@ -560,8 +564,8 @@ void test_crypto()
 		CHECK(length > 0 && bytes[0] == 0x30);
 		CHECK(airplay::rsa_oaep_wrap_key(hex_of(bytes, (size_t)length), key, wrapped, error));
 		CFDataRef cipher = CFDataCreate(kCFAllocatorDefault, wrapped.data(), (CFIndex)wrapped.size());
-		CFDataRef opened =
-			SecKeyCreateDecryptedData(private_key, kSecKeyAlgorithmRSAEncryptionOAEPSHA1, cipher, &cf_error);
+		CFDataRef opened = SecKeyCreateDecryptedData(private_key, kSecKeyAlgorithmRSAEncryptionOAEPSHA1, cipher,
+							     &cf_error);
 		CHECK(opened != nullptr);
 		if (opened) {
 			CHECK(CFDataGetLength(opened) == 16);
@@ -698,8 +702,8 @@ bool hook_m3(void *, const std::vector<uint8_t> &, std::vector<uint8_t> &out, st
 	return true;
 }
 
-bool hook_wrap(void *, const std::vector<uint8_t> &, const std::vector<uint8_t> &, const uint8_t *, std::vector<uint8_t> &ekey,
-	       std::string &)
+bool hook_wrap(void *, const std::vector<uint8_t> &, const std::vector<uint8_t> &, const uint8_t *,
+	       std::vector<uint8_t> &ekey, std::string &)
 {
 	ekey.assign(72, 0x11);
 	return true;
@@ -1096,21 +1100,21 @@ void test_bitstream()
 	hevc.vps = bytes_of("40010c01ffff016000000300b0000003000003005d170240");
 	hevc.sps = bytes_of("420101016000000300b0000003000003005da00280802d16205ee45914bff2e7f13fa2");
 	hevc.pps = bytes_of("4401c072f05324");
-	const std::vector<uint8_t> vt_hvcc = bytes_of(
-		"010160000000b000000000005df000fcfdf8f800000b03a00001001840010c01"
-		"ffff016000000300b0000003000003005d170240a10001002342010101600000"
-		"0300b0000003000003005da00280802d16205ee45914bff2e7f13fa2a2000100"
-		"074401c072f05324");
+	const std::vector<uint8_t> vt_hvcc = bytes_of("010160000000b000000000005df000fcfdf8f800000b03a00001001840010c01"
+						      "ffff016000000300b0000003000003005d170240a10001002342010101600000"
+						      "0300b0000003000003005da00280802d16205ee45914bff2e7f13fa2a2000100"
+						      "074401c072f05324");
 	std::vector<uint8_t> hvcc;
 	CHECK(airplay::build_hvcc(hevc, hvcc));
-	CHECK(hvcc == vt_hvcc);	const std::vector<uint8_t> vt_hevc_desc = bytes_of(
-		"000000ca68766331000000000000000100000000000000000000020000000200"
-		"050002d000480000004800000000000000010448455643000000000000000000"
-		"0000000000000000000000000000000000000018ffff00000070687663430101"
-		"60000000b000000000005df000fcfdf8f800000b03a00001001840010c01ffff"
-		"016000000300b0000003000003005d170240a100010023420101016000000300"
-		"b0000003000003005da00280802d16205ee45914bff2e7f13fa2a20001000744"
-		"01c072f0532400000000");
+	CHECK(hvcc == vt_hvcc);
+	const std::vector<uint8_t> vt_hevc_desc =
+		bytes_of("000000ca68766331000000000000000100000000000000000000020000000200"
+			 "050002d000480000004800000000000000010448455643000000000000000000"
+			 "0000000000000000000000000000000000000018ffff00000070687663430101"
+			 "60000000b000000000005df000fcfdf8f800000b03a00001001840010c01ffff"
+			 "016000000300b0000003000003005d170240a100010023420101016000000300"
+			 "b0000003000003005da00280802d16205ee45914bff2e7f13fa2a20001000744"
+			 "01c072f0532400000000");
 	CHECK(airplay::image_description(airplay::Codec::Hevc, 1280, 720, vt_hvcc) == vt_hevc_desc);
 
 	airplay::ParameterSets avc;
@@ -1119,11 +1123,11 @@ void test_bitstream()
 	std::vector<uint8_t> avcc;
 	CHECK(airplay::build_avcc(avc, avcc));
 	CHECK(avcc == bytes_of("0164001fffe1000a2764001fac56805005b901000428ee3cb0fdf8f800"));
-	const std::vector<uint8_t> vt_avc_desc = bytes_of(
-		"0000007f61766331000000000000000100000000000000000000020000000200"
-		"050002d0004800000048000000000000000105482e3236340000000000000000"
-		"0000000000000000000000000000000000000018ffff00000025617663430164"
-		"001fffe1000a2764001fac56805005b901000428ee3cb0fdf8f80000000000");
+	const std::vector<uint8_t> vt_avc_desc =
+		bytes_of("0000007f61766331000000000000000100000000000000000000020000000200"
+			 "050002d0004800000048000000000000000105482e3236340000000000000000"
+			 "0000000000000000000000000000000000000018ffff00000025617663430164"
+			 "001fffe1000a2764001fac56805005b901000428ee3cb0fdf8f80000000000");
 	CHECK(airplay::image_description(airplay::Codec::H264, 1280, 720, avcc) == vt_avc_desc);
 
 	std::vector<uint8_t> annexb = bytes_of("00000001");
@@ -1131,7 +1135,12 @@ void test_bitstream()
 	const std::vector<uint8_t> rest = bytes_of("00000001");
 	annexb.insert(annexb.end(), rest.begin(), rest.end());
 	annexb.insert(annexb.end(), hevc.sps.begin(), hevc.sps.end());
-	const std::vector<uint8_t> tail = bytes_of("000001" "4401c072f05324" "00000001" "460150" "00000001" "2601af0400");
+	const std::vector<uint8_t> tail = bytes_of("000001"
+						   "4401c072f05324"
+						   "00000001"
+						   "460150"
+						   "00000001"
+						   "2601af0400");
 	annexb.insert(annexb.end(), tail.begin(), tail.end());
 	airplay::ParameterSets found;
 	std::vector<uint8_t> frame;
@@ -1155,14 +1164,33 @@ void test_mdns()
 		p.insert(p.end(), more.begin(), more.end());
 	};
 	/* PTR _airplay._tcp.local. -> "Office TV" + pointer to offset 12. */
-	add("085f616972706c6179045f746370056c6f63616c00" "000c0001" "00001194" "000c" "094f6666696365205456c00c");
+	add("085f616972706c6179045f746370056c6f63616c00"
+	    "000c0001"
+	    "00001194"
+	    "000c"
+	    "094f6666696365205456c00c");
 	/* SRV for the instance (pointer to the PTR rdata at offset 0x2b), port 7000, target tv.local. */
-	add("c02b" "00218001" "00000078" "000b" "00000000" "1b58" "027476c01a");
+	add("c02b"
+	    "00218001"
+	    "00000078"
+	    "000b"
+	    "00000000"
+	    "1b58"
+	    "027476c01a");
 	/* TXT model=7203X and deviceid. */
-	add("c02b" "00108001" "00001194" "0021" "0b6d6f64656c3d3732303358" "146465766963656964"
+	add("c02b"
+	    "00108001"
+	    "00001194"
+	    "0021"
+	    "0b6d6f64656c3d3732303358"
+	    "146465766963656964"
 	    "3d41323a41413a33463a4442");
 	/* A for tv.local. (pointer to the SRV target). */
-	add("c049" "00018001" "00000078" "0004" "0a2f162f");
+	add("c049"
+	    "00018001"
+	    "00000078"
+	    "0004"
+	    "0a2f162f");
 	std::vector<airplay::MdnsRecord> records = airplay::mdns_parse(p.data(), p.size());
 	CHECK(records.size() == 4);
 	if (records.size() != 4)

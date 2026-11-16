@@ -188,8 +188,9 @@ struct MonitorDialog::Impl {
 	bool try_encoders(const airplay::EncodeConfig &wanted, std::string &error)
 	{
 		for (const std::string &id : airplay::encoder_candidates(g_settings.encoder_id, wanted.codec)) {
-			if (video.start(id, wanted, preview->isChecked(),
-					[this](airplay::EncodedAu &&au) { deliver(std::move(au)); }, error)) {
+			if (video.start(
+				    id, wanted, preview->isChecked(),
+				    [this](airplay::EncodedAu &&au) { deliver(std::move(au)); }, error)) {
 				config = wanted;
 				return true;
 			}
@@ -207,8 +208,8 @@ struct MonitorDialog::Impl {
 			return true;
 		if (wanted.codec == airplay::Codec::Hevc) {
 			uint32_t override_bps = bitrate->value() > 0 ? (uint32_t)bitrate->value() * 1000u : 0;
-			wanted = airplay::choose_encode(src_width, src_height, src_fps, wanted.width, wanted.height, wanted.fps,
-							false, override_bps);
+			wanted = airplay::choose_encode(src_width, src_height, src_fps, wanted.width, wanted.height,
+							wanted.fps, false, override_bps);
 			wanted.fell_back_from_hevc = true;
 			if (try_encoders(wanted, error))
 				return true;
@@ -385,7 +386,8 @@ struct MonitorDialog::Impl {
 						QString status = QString::fromStdString(result.status);
 						if (result.config.codec != g_dialog->impl_->config.codec)
 							status += QString(" · ") +
-								  QString::fromUtf8(airplay::codec_name(g_dialog->impl_->config.codec));
+								  QString::fromUtf8(airplay::codec_name(
+									  g_dialog->impl_->config.codec));
 						g_dialog->impl_->set_status(status);
 					},
 					Qt::QueuedConnection);
@@ -452,7 +454,8 @@ MonitorDialog::MonitorDialog(QWidget *parent) : QDialog(parent), impl_(new Impl)
 	if (!impl_->audio_available) {
 		impl_->audio_box->setChecked(false);
 		impl_->audio_box->setEnabled(false);
-		auto *missing = new QLabel(QString(obs_module_text("AudioUnavailable")).arg(audio_reason.c_str()), this);
+		auto *missing =
+			new QLabel(QString(obs_module_text("AudioUnavailable")).arg(audio_reason.c_str()), this);
 		missing->setWordWrap(true);
 		layout->addWidget(missing);
 	}
@@ -535,9 +538,8 @@ MonitorDialog::MonitorDialog(QWidget *parent) : QDialog(parent), impl_(new Impl)
 		impl_->set_status(obs_module_text("StatusIdle"));
 		impl_->refresh_stats();
 	});
-	QObject::connect(impl_->list, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *) {
-		impl_->connect_selected();
-	});
+	QObject::connect(impl_->list, &QListWidget::itemDoubleClicked, this,
+			 [this](QListWidgetItem *) { impl_->connect_selected(); });
 	QObject::connect(impl_->program, &QRadioButton::toggled, this, [this](bool on) {
 		if (!on)
 			return;
@@ -630,9 +632,9 @@ void MonitorDialog::on_video_reset()
 	impl_->video.stop();
 	uint32_t override_bps = impl_->bitrate->value() > 0 ? (uint32_t)impl_->bitrate->value() * 1000u : 0;
 	bool hevc = impl_->config.codec == airplay::Codec::Hevc || impl_->config.fell_back_from_hevc;
-	airplay::EncodeConfig wanted = airplay::choose_encode(
-		impl_->src_width, impl_->src_height, impl_->src_fps, impl_->max_width, impl_->max_height, impl_->max_fps,
-		hevc && !impl_->config.fell_back_from_hevc, override_bps);
+	airplay::EncodeConfig wanted = airplay::choose_encode(impl_->src_width, impl_->src_height, impl_->src_fps,
+							      impl_->max_width, impl_->max_height, impl_->max_fps,
+							      hevc && !impl_->config.fell_back_from_hevc, override_bps);
 	QString error;
 	if (!impl_->start_video(wanted, error))
 		impl_->fail_pipeline(error);
@@ -682,7 +684,8 @@ void airplay_monitor_show()
 	if (!g_dialog) {
 		auto *parent = static_cast<QWidget *>(obs_frontend_get_main_window());
 		g_dialog = new MonitorDialog(parent);
-		g_dialog->restore(g_settings.device_id, g_settings.preview, g_settings.send_audio, g_settings.bitrate_kbps);
+		g_dialog->restore(g_settings.device_id, g_settings.preview, g_settings.send_audio,
+				  g_settings.bitrate_kbps);
 	}
 	g_dialog->show_and_raise();
 }

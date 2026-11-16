@@ -241,8 +241,8 @@ void aead_tag(const uint8_t otk[32], const uint8_t *aad, size_t aad_len, const u
 	poly1305_mac(otk, mac.data(), mac.size(), tag);
 }
 
-bool seal_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8_t *aad, size_t aad_len, const uint8_t *plain,
-		size_t plain_len, std::vector<uint8_t> &out)
+bool seal_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8_t *aad, size_t aad_len,
+		const uint8_t *plain, size_t plain_len, std::vector<uint8_t> &out)
 {
 	uint8_t otk[64];
 	chacha_xor(key, nonce, 0, nullptr, otk, 64);
@@ -253,8 +253,8 @@ bool seal_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8_t *a
 	return true;
 }
 
-bool open_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8_t *aad, size_t aad_len, const uint8_t *sealed,
-		size_t sealed_len, std::vector<uint8_t> &out)
+bool open_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8_t *aad, size_t aad_len,
+		const uint8_t *sealed, size_t sealed_len, std::vector<uint8_t> &out)
 {
 	if (sealed_len < 16)
 		return false;
@@ -509,8 +509,8 @@ bool aead_open_nonce(const uint8_t key[32], const uint8_t nonce[12], const uint8
 
 bool aead_self_test()
 {
-	std::vector<uint8_t> key, nonce, plain, aad, expect, ct, tag, poly_key, poly_msg, poly_tag, block_key, block_nonce,
-		block_out;
+	std::vector<uint8_t> key, nonce, plain, aad, expect, ct, tag, poly_key, poly_msg, poly_tag, block_key,
+		block_nonce, block_out;
 	if (!unhex("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", block_key) ||
 	    !unhex("000000090000004a00000000", block_nonce))
 		return false;

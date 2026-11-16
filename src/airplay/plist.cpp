@@ -170,7 +170,10 @@ private:
 				put_be(body_, (uint64_t)value.i, 8);
 			} else {
 				int width = width_for((uint64_t)value.i);
-				body_.push_back((uint8_t)(0x10 | (width == 1 ? 0 : width == 2 ? 1 : width == 4 ? 2 : 3)));
+				body_.push_back((uint8_t)(0x10 | (width == 1   ? 0
+								  : width == 2 ? 1
+								  : width == 4 ? 2
+									       : 3)));
 				put_be(body_, (uint64_t)value.i, width);
 			}
 			break;
@@ -360,13 +363,16 @@ private:
 			uint64_t refs = high == 0xd ? length * 2 : length;
 			if (refs > (table_ - pos) / ref_size_)
 				return false;
-			auto ref_at = [&](uint64_t i) { return get_be(data_ + pos + i * ref_size_, ref_size_); };
+			auto ref_at = [&](uint64_t i) {
+				return get_be(data_ + pos + i * ref_size_, ref_size_);
+			};
 			if (high == 0xd) {
 				std::map<std::string, Plist> dict;
 				for (uint64_t i = 0; i < length; i++) {
 					Plist key;
 					Plist value;
-					if (!object(ref_at(i), key, depth + 1) || !object(ref_at(length + i), value, depth + 1))
+					if (!object(ref_at(i), key, depth + 1) ||
+					    !object(ref_at(length + i), value, depth + 1))
 						return false;
 					if (key.type == Plist::Type::String)
 						dict.emplace(std::move(key.s), std::move(value));
@@ -471,8 +477,8 @@ private:
 			else if (entity == "apos")
 				out.push_back('\'');
 			else if (!entity.empty() && entity[0] == '#')
-				append_utf8(out, (uint32_t)std::strtoul(entity.c_str() + 1 + (entity[1] == 'x'), nullptr,
-								    entity[1] == 'x' ? 16 : 10));
+				append_utf8(out, (uint32_t)std::strtoul(entity.c_str() + 1 + (entity[1] == 'x'),
+									nullptr, entity[1] == 'x' ? 16 : 10));
 			i = semi;
 		}
 		return out;
@@ -484,12 +490,12 @@ private:
 		uint32_t acc = 0;
 		int bits = 0;
 		for (char c : in) {
-			int v = c >= 'A' && c <= 'Z' ? c - 'A'
+			int v = c >= 'A' && c <= 'Z'   ? c - 'A'
 				: c >= 'a' && c <= 'z' ? c - 'a' + 26
 				: c >= '0' && c <= '9' ? c - '0' + 52
-				: c == '+' ? 62
-				: c == '/' ? 63
-					   : -1;
+				: c == '+'             ? 62
+				: c == '/'             ? 63
+						       : -1;
 			if (v < 0)
 				continue;
 			acc = (acc << 6) | (uint32_t)v;

@@ -14,7 +14,6 @@
 #include "airplay/net.hpp"
 #include "airplay/socket.hpp"
 
-
 #include <memory>
 
 #include <algorithm>
@@ -142,8 +141,8 @@ void Session::submit_video(VideoAu au)
 	if (send_codec) {
 		/* Receivers read H.264 settings as a bare avcC, and HEVC settings only
 		   inside a QuickTime ImageDescription. */
-		const std::vector<uint8_t> &codec =
-			hevc && !au.sample_description.empty() ? au.sample_description : au.codec_config;
+		const std::vector<uint8_t> &codec = hevc && !au.sample_description.empty() ? au.sample_description
+											   : au.codec_config;
 		packets.push_back(build_mirror_packet(MirrorPayloadType::Codec, ntp, au.width, au.height, codec.data(),
 						      codec.size(), false, hevc));
 	}
@@ -155,7 +154,8 @@ void Session::submit_video(VideoAu au)
 		for (auto &packet : packets) {
 			if (impl_->video_queue.size() >= 4) {
 				auto drop = impl_->video_queue.begin();
-				while (drop != impl_->video_queue.end() && drop->size() >= 6 && (*drop)[4] == 1 && (*drop)[5] == 0)
+				while (drop != impl_->video_queue.end() && drop->size() >= 6 && (*drop)[4] == 1 &&
+				       (*drop)[5] == 0)
 					++drop;
 				if (drop == impl_->video_queue.end())
 					drop = impl_->video_queue.begin();
@@ -246,7 +246,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			return;
 		}
 		TcpTransport control;
-		if (!control.connect_to(copy.receiver.address, copy.receiver.port, copy.receiver.family, 20000, error)) {
+		if (!control.connect_to(copy.receiver.address, copy.receiver.port, copy.receiver.family, 20000,
+					error)) {
 			status(error);
 			impl_->alive.store(false);
 			return;
@@ -266,9 +267,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			if (impl_->on_status)
 				impl_->on_status("The TV is showing a pairing code. Type it and press Connect.");
 			std::unique_lock<std::mutex> lock(impl_->pin_mu);
-			impl_->pin_cv.wait_for(lock, std::chrono::minutes(3), [&]() {
-				return impl_->pin_ready || impl_->stop.load();
-			});
+			impl_->pin_cv.wait_for(lock, std::chrono::minutes(3),
+					       [&]() { return impl_->pin_ready || impl_->stop.load(); });
 			impl_->pin_waiting = false;
 			if (!impl_->pin_ready)
 				return std::string();
@@ -283,15 +283,18 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 		};
 		/* The timing replies and audio sync use uptime, the clock a Mac mirror sends.
 		   Video packets use the session clock. */
-		auto uptime_seconds = []() { return (double)mono_ns() / 1e9; };
+		auto uptime_seconds = []() {
+			return (double)mono_ns() / 1e9;
+		};
 		TcpTransport video;
 		TcpTransport event_channel;
 		local.prepare_video = [&](int port, std::string &prep_error) {
-			return video.connect_to(copy.receiver.address, (uint16_t)port, copy.receiver.family, 5000, prep_error);
+			return video.connect_to(copy.receiver.address, (uint16_t)port, copy.receiver.family, 5000,
+						prep_error);
 		};
 		local.prepare_event = [&](int port, std::string &prep_error) {
-			return event_channel.connect_to(copy.receiver.address, (uint16_t)port, copy.receiver.family, 5000,
-							 prep_error);
+			return event_channel.connect_to(copy.receiver.address, (uint16_t)port, copy.receiver.family,
+							5000, prep_error);
 		};
 		local.on_receiver_timing = [&](int port) {
 			if (copy.receiver.family == AF_INET)
@@ -326,8 +329,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 		/* RECORD starts a receiver timer of about a minute. POST /feedback on this
 		 * same control connection, still sealed when pairing was used, resets it.
 		 */
-		ByteTransport *feedback_io =
-			seal ? static_cast<ByteTransport *>(seal.get()) : static_cast<ByteTransport *>(&control);
+		ByteTransport *feedback_io = seal ? static_cast<ByteTransport *>(seal.get())
+						  : static_cast<ByteTransport *>(&control);
 		std::atomic<bool> feedback_stop{false};
 		std::thread feedback_thread([feedback_io, cseq = result.next_cseq > 0 ? result.next_cseq : 1,
 					     &feedback_stop]() { pump_feedback(*feedback_io, cseq, feedback_stop); });
@@ -350,8 +353,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			if (peeked >= 2 && peek[0] >= 'A' && peek[1] >= 'A')
 				cleartext = true;
 			if (!cleartext && result.event_read_key.size() == 32 && result.event_write_key.size() == 32) {
-				event_seal = std::make_unique<SealedControl>(event_channel, result.event_write_key.data(),
-									     result.event_read_key.data());
+				event_seal = std::make_unique<SealedControl>(
+					event_channel, result.event_write_key.data(), result.event_read_key.data());
 				event_io = event_seal.get();
 			} else {
 				event_io = &event_channel;
@@ -377,9 +380,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			impl_->alive.store(false);
 			return;
 		}
-		if (!video.is_open() &&
-		    !video.connect_to(copy.receiver.address, (uint16_t)result.video_port, copy.receiver.family, 5000,
-				      error)) {
+		if (!video.is_open() && !video.connect_to(copy.receiver.address, (uint16_t)result.video_port,
+							  copy.receiver.family, 5000, error)) {
 			status(error.empty() ? "Could not open the video stream" : error);
 			impl_->alive.store(false);
 			return;
@@ -437,7 +439,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 					audio_packet.push_back((uint8_t)(nonce >> (8 * i)));
 			}
 			uint64_t now_ns = mono_ns();
-			if (result.audio_control_port > 0 && (!audio_sync_sent || now_ns - last_audio_sync > 1000000000ull)) {
+			if (result.audio_control_port > 0 &&
+			    (!audio_sync_sent || now_ns - last_audio_sync > 1000000000ull)) {
 				constexpr uint64_t kEpoch1900 = 2208988800ull;
 				uint64_t ntp = ntp_from_seconds(uptime_seconds()) + (kEpoch1900 << 32);
 				uint32_t rate = result.audio_sample_rate;
@@ -458,8 +461,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			if (recent_rtp.size() > 3)
 				recent_rtp.pop_front();
 			for (const auto &frame : recent_rtp)
-				audio_out.send_to(copy.receiver.address, (uint16_t)result.audio_port, copy.receiver.family,
-						  frame.data(), frame.size());
+				audio_out.send_to(copy.receiver.address, (uint16_t)result.audio_port,
+						  copy.receiver.family, frame.data(), frame.size());
 		};
 		impl_->ready.store(true);
 		status(result.status);
@@ -475,7 +478,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 				{
 					std::unique_lock<std::mutex> lock(impl_->mutex);
 					impl_->cv.wait_for(lock, std::chrono::milliseconds(20), [&]() {
-						return impl_->stop.load() || audio_stop.load() || !impl_->audio_queue.empty();
+						return impl_->stop.load() || audio_stop.load() ||
+						       !impl_->audio_queue.empty();
 					});
 					while (!impl_->audio_queue.empty() && audio_packets.size() < 32) {
 						audio_packets.push_back(std::move(impl_->audio_queue.front()));
@@ -505,9 +509,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			std::vector<uint8_t> video_packet;
 			{
 				std::unique_lock<std::mutex> lock(impl_->mutex);
-				impl_->cv.wait_for(lock, std::chrono::milliseconds(20), [&]() {
-					return impl_->stop.load() || !impl_->video_queue.empty();
-				});
+				impl_->cv.wait_for(lock, std::chrono::milliseconds(20),
+						   [&]() { return impl_->stop.load() || !impl_->video_queue.empty(); });
 				if (!impl_->video_queue.empty()) {
 					video_packet = std::move(impl_->video_queue.front());
 					impl_->video_queue.pop_front();
@@ -525,20 +528,24 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 						video_packet[2] = (uint8_t)(wire_len >> 16);
 						video_packet[3] = (uint8_t)(wire_len >> 24);
 						std::vector<uint8_t> sealed_payload;
-						if (!aead_seal(result.chacha_key.data(), video_nonce++, video_packet.data(),
-							       kMirrorHeaderSize, video_packet.data() + kMirrorHeaderSize,
-							       plain_len, sealed_payload)) {
+						if (!aead_seal(result.chacha_key.data(), video_nonce++,
+							       video_packet.data(), kMirrorHeaderSize,
+							       video_packet.data() + kMirrorHeaderSize, plain_len,
+							       sealed_payload)) {
 							status("Could not encrypt a video frame");
 							report_disconnect = false;
 							break;
 						}
 						video_packet.resize(kMirrorHeaderSize);
-						video_packet.insert(video_packet.end(), sealed_payload.begin(), sealed_payload.end());
+						video_packet.insert(video_packet.end(), sealed_payload.begin(),
+								    sealed_payload.end());
 					} else if (kind == (uint8_t)MirrorPayloadType::Video && result.encrypt) {
 						std::string crypto_error;
 						if (!aes.process(video_packet.data() + kMirrorHeaderSize,
-								 video_packet.size() - kMirrorHeaderSize, crypto_error)) {
-							status(crypto_error.empty() ? "Could not encrypt a video frame" : crypto_error);
+								 video_packet.size() - kMirrorHeaderSize,
+								 crypto_error)) {
+							status(crypto_error.empty() ? "Could not encrypt a video frame"
+										    : crypto_error);
 							report_disconnect = false;
 							break;
 						}
@@ -555,7 +562,8 @@ void Session::start(const HandshakeInput &input, StatusFn on_status, ReadyFn on_
 			}
 			uint64_t now = mono_ns();
 			if (now - last_heartbeat > 1000000000ull) {
-				auto beat = build_mirror_packet(MirrorPayloadType::Heartbeat, ntp_from_seconds(session_seconds()),
+				auto beat = build_mirror_packet(MirrorPayloadType::Heartbeat,
+								ntp_from_seconds(session_seconds()),
 								result.config.width, result.config.height, nullptr, 0);
 				if (!video.write_all(beat.data(), beat.size())) {
 					if (!impl_->stop.load()) {

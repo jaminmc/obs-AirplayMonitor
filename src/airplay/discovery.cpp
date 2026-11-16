@@ -100,7 +100,8 @@ void put_name(std::vector<uint8_t> &out, const std::string &name)
 		size_t length = std::min<size_t>(dot - start, 63);
 		if (length) {
 			out.push_back((uint8_t)length);
-			out.insert(out.end(), name.begin() + (std::ptrdiff_t)start, name.begin() + (std::ptrdiff_t)(start + length));
+			out.insert(out.end(), name.begin() + (std::ptrdiff_t)start,
+				   name.begin() + (std::ptrdiff_t)(start + length));
 		}
 		start = dot + 1;
 	}
@@ -129,7 +130,8 @@ std::string txt_value(const std::vector<uint8_t> &txt, const char *key)
 
 std::vector<uint8_t> mdns_query(uint16_t id, const std::vector<std::pair<std::string, uint16_t>> &questions)
 {
-	std::vector<uint8_t> out = {(uint8_t)(id >> 8), (uint8_t)id, 0, 0, 0, (uint8_t)questions.size(), 0, 0, 0, 0, 0, 0};
+	std::vector<uint8_t> out = {
+		(uint8_t)(id >> 8), (uint8_t)id, 0, 0, 0, (uint8_t)questions.size(), 0, 0, 0, 0, 0, 0};
 	for (const auto &question : questions) {
 		put_name(out, question.first);
 		out.push_back((uint8_t)(question.second >> 8));
@@ -347,7 +349,8 @@ struct Discovery::Impl {
 			uint16_t id = 0;
 			random_bytes(&id, sizeof id);
 			std::vector<uint8_t> query = mdns_query(id, questions);
-			net::send_to(fd, query.data(), query.size(), reinterpret_cast<sockaddr *>(&group), sizeof group);
+			net::send_to(fd, query.data(), query.size(), reinterpret_cast<sockaddr *>(&group),
+				     sizeof group);
 		};
 
 		const auto started = std::chrono::steady_clock::now();

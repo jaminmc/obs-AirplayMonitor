@@ -15,8 +15,7 @@
 namespace airplay {
 namespace {
 
-bool fill_address(const std::string &address, uint16_t port, int family, sockaddr_storage &storage,
-		  socklen_t &length)
+bool fill_address(const std::string &address, uint16_t port, int family, sockaddr_storage &storage, socklen_t &length)
 {
 	std::memset(&storage, 0, sizeof storage);
 	if (family == AF_INET6) {
@@ -228,7 +227,8 @@ void UdpClock::pump(uint64_t now_ntp)
 		uint8_t packet[128];
 		sockaddr_storage from;
 		socklen_t from_len = sizeof from;
-		net::ssize count = net::recv_from(fd, packet, sizeof packet, reinterpret_cast<sockaddr *>(&from), &from_len);
+		net::ssize count =
+			net::recv_from(fd, packet, sizeof packet, reinterpret_cast<sockaddr *>(&from), &from_len);
 		if (count <= 0)
 			return;
 		std::vector<uint8_t> reply = ntp_reply(packet, (size_t)count, now_ntp);
@@ -280,7 +280,8 @@ void UdpClock::probe_receiver(const std::string &address, uint16_t port, uint64_
 		request[2] = (uint8_t)(sequence >> 8);
 		request[3] = (uint8_t)sequence;
 		store_ntp_be(request + 24, stamped);
-		net::send_to(net::from_handle(fd_), request, sizeof request, reinterpret_cast<sockaddr *>(&dest), length);
+		net::send_to(net::from_handle(fd_), request, sizeof request, reinterpret_cast<sockaddr *>(&dest),
+			     length);
 		if (sequence < 3)
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}

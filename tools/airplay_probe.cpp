@@ -109,7 +109,8 @@ int main(int argc, char **argv)
 			status = text;
 			std::fprintf(stderr, "status: %s\n", text.c_str());
 			if (text.find("Could not") != std::string::npos || text.find("failed") != std::string::npos ||
-			    text.find("rejected") != std::string::npos || text.find("Disconnected") != std::string::npos)
+			    text.find("rejected") != std::string::npos ||
+			    text.find("Disconnected") != std::string::npos)
 				failed = true;
 			cv.notify_all();
 		},
@@ -122,7 +123,8 @@ int main(int argc, char **argv)
 
 	{
 		std::unique_lock<std::mutex> lock(mu);
-		cv.wait_for(lock, std::chrono::seconds(90), [&]() { return ready || failed || session.waiting_for_pin(); });
+		cv.wait_for(lock, std::chrono::seconds(90),
+			    [&]() { return ready || failed || session.waiting_for_pin(); });
 	}
 	if (session.waiting_for_pin()) {
 		std::fprintf(stderr, "Type the code shown on the receiver, then press return:\n");
@@ -216,7 +218,9 @@ int main(int argc, char **argv)
 				float sample;
 				if (sync_test) {
 					/* A 1 kHz beep in step with the white flash. */
-					sample = sync_pulse((double)sample_index++ / rate) ? 0.3f * std::sin((float)tone) : 0.f;
+					sample = sync_pulse((double)sample_index++ / rate)
+							 ? 0.3f * std::sin((float)tone)
+							 : 0.f;
 					tone += 2.0 * 3.141592653589793 * 1000.0 / rate;
 				} else {
 					sample = 0.2f * std::sin((float)tone);
@@ -228,8 +232,9 @@ int main(int argc, char **argv)
 			std::vector<airplay::AacPacket> encoded;
 			audio.push(pcm.data(), spf, encoded);
 			for (const airplay::AacPacket &packet : encoded)
-				session.submit_audio(airplay::build_rtp_audio(seq++, packet.rtp_timestamp, ssrc, packet.data.data(),
-									      packet.data.size(), packet.marker));
+				session.submit_audio(airplay::build_rtp_audio(seq++, packet.rtp_timestamp, ssrc,
+									      packet.data.data(), packet.data.size(),
+									      packet.marker));
 			next_audio += audio_step;
 		}
 		auto wake = next_audio < next_video ? next_audio : next_video;

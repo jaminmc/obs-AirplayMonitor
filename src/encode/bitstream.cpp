@@ -236,8 +236,7 @@ bool build_hvcc(const ParameterSets &sets, std::vector<uint8_t> &out)
 	return true;
 }
 
-std::vector<uint8_t> image_description(Codec codec, uint32_t width, uint32_t height,
-				       const std::vector<uint8_t> &config)
+std::vector<uint8_t> image_description(Codec codec, uint32_t width, uint32_t height, const std::vector<uint8_t> &config)
 {
 	if (config.empty())
 		return {};

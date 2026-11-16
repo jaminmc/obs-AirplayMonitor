@@ -890,8 +890,8 @@ void secure_clear(std::vector<uint8_t> &bytes)
 
 namespace {
 
-const uint8_t kScreenAcl[] = {0xe1, 0x57, 'c', 'o', 'm', '.', 'a', 'p', 'p', 'l', 'e', '.', 'S', 'c', 'r', 'e', 'e',
-			      'n', 'C', 'a', 'p', 't', 'u', 'r', 'e', 0x01};
+const uint8_t kScreenAcl[] = {0xe1, 0x57, 'c', 'o', 'm', '.', 'a', 'p', 'p', 'l', 'e', '.', 'S',
+			      'c',  'r',  'e', 'e', 'n', 'C', 'a', 'p', 't', 'u', 'r', 'e', 0x01};
 
 bool hap_nonce(const char *label, uint8_t nonce[12])
 {
@@ -1035,9 +1035,9 @@ std::string new_controller_id()
 	bytes[6] = (uint8_t)((bytes[6] & 0x0f) | 0x40);
 	bytes[8] = (uint8_t)((bytes[8] & 0x3f) | 0x80);
 	char text[40];
-	std::snprintf(text, sizeof text, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", bytes[0],
-		      bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
-		      bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
+	std::snprintf(text, sizeof text, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		      bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8],
+		      bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]);
 	return text;
 }
 
@@ -1232,8 +1232,9 @@ bool pair_verify_finish(const PairingIdentity &identity, VerifyEphemeral &epheme
 	if (encrypted && !encrypted->empty()) {
 		uint8_t nonce[12];
 		std::vector<uint8_t> opened;
-		bool opened_ok = hap_nonce("PV-Msg02", nonce) &&
-				 aead_open_nonce(verify_key, nonce, nullptr, 0, encrypted->data(), encrypted->size(), opened);
+		bool opened_ok =
+			hap_nonce("PV-Msg02", nonce) &&
+			aead_open_nonce(verify_key, nonce, nullptr, 0, encrypted->data(), encrypted->size(), opened);
 		secure_clear(opened);
 		if (!opened_ok) {
 			wipe(raw, sizeof raw);

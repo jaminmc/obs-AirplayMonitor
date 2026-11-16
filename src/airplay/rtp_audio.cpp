@@ -48,7 +48,7 @@ std::vector<uint8_t> classic_sync_packet(uint32_t playing, uint32_t rtp, uint64_
 uint32_t AudioSyncClock::due(uint32_t rtp_time, uint64_t capture_ns, uint64_t now_ns, uint32_t rate)
 {
 	uint64_t captured = capture_ns && capture_ns <= now_ns && now_ns - capture_ns < 1000000000ull ? capture_ns
-												       : now_ns;
+												      : now_ns;
 	if (!anchor_ns_) {
 		anchor_ns_ = captured;
 		anchor_rtp_ = rtp_time;
